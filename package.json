@@ -1,0 +1,14 @@
+{
+  "name": "signal-app",
+  "version": "0.0.1",
+  "description": "A signal app :D",
+  "main": "src/index.ts",
+  "author": "Saahil <neon@saahild.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
