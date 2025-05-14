@@ -1,22 +1,21 @@
 {
-  "name": "signal-app",
-  "version": "0.0.1",
-  "description": "A signal app :D",
-  "main": "src/index.ts",
-  "author": "Saahil <neon@saahild.com>",
-  "license": "MIT",
-  "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "ejs": "^3.1.10",
-    "express": "^4.21.2",
-    "express-session": "^1.18.1"
-  },
-  "scripts": {
-    "start": "bun run src/index.ts"
+    "@tailwindcss/vite": "^4.1.6",
+    "@vueuse/core": "^13.1.0",
+    "daisyui": "^5.0.35",
+    "nuxt": "^3.17.2",
+    "tailwindcss": "^4.1.6",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.1"
   }
 }

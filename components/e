@@ -1,0 +1,7 @@
+<template>
+<h1>Log In</h1>
+<p>Atm we do not have a websocket url which we can connect to. could you give one?</p>
+<div>
+<input type="text" />
+</div>
+</template>
