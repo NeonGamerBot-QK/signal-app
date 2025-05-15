@@ -1,15 +1,18 @@
 <script setup lang="ts">
 // import Err from "./Error.vue"
-let url = "ws://localhost:8000";
+let url = "http://localhost:8080";
 const curl = useCookie("ws-url")
 let error: string | null = null;
-function testUrl() {
-const ws = new WebSocket(url)
-ws.onerror = () => {
-error = "Failed to connect (check console for more)"
+async function testUrl() {
+try {
+const d = await fetch(url + "/api/v1/check").then(r=>r.status == 200)
+if(!d) {
+error = "Bad url (no 200)"
+} else {
+// somehow popup it works but uh how? idk
 }
-ws.onconnect = () => {
-ws.disconnect()
+} catch (e) {
+error = "Failed to fetch: "+ e.message
 }
 }
 function saveURLAndSet() {
@@ -24,7 +27,7 @@ location.reload()
     <div class="max-w-md">
       <h1 class="text-5xl font-bold">Login</h1>
       <p class="py-6">
-       Hey.. can you give me a websocket url you want to use?
+       Hey.. can you give me a http url you want to use (aka the signal backend)?
       </p>
       <Error v-if="error" :message="error" />
 <div class="flex flex-1">
