@@ -1,3 +1,8 @@
+<script setup type="ts">
+defineProps({
+  skeleton: Boolean
+})
+</script>
 <template>
 <div class="chat chat-start">
   <div class="chat-image avatar">

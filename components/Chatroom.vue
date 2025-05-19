@@ -4,8 +4,10 @@ import JSONRPCHandler from '../util/jsonrpc'
 const urlCookie = useCookie("ws-url")
 console.log(process.browser)
 let chats = []
-
+let showChats0 = false;
+let ShowChats1 = false;
 if(process.browser) {
+window.JSONRPCHandler = JSONRPCHandler
 const evtSource = new window.EventSource(`/api/events`, {
   withCredentials: true,
 });
@@ -19,7 +21,8 @@ evtSource.addEventListener("receive", (e) => {
   console.log(e.data);
 });
 if(!localStorage.getItem("groupchatlist")) {
-  console.log('gc list')
+  const nr = []
+console.log('gc list')
   const gcList = await fetch("/api/send", {
     method: "POST",
     headers: {
@@ -31,12 +34,27 @@ if(!localStorage.getItem("groupchatlist")) {
       .build()),
   }).then(rr=>rr.json()).then(async d=> {
     console.log(d.result)
-  const nr = []
   for(const item of d.result) {
+  item._type = "group"
     nr.push(item)
   }
-    localStorage.setItem("groupchatlist", JSON.stringify(nr))
+
   });
+await  fetch('/api/send', {
+  method: "POST",
+  headers: {
+  "Content-Type": "application/json"
+  },
+  body: JSON.stringify(new JSONRPCHandler().setMethod("listContacts").build())
+  }).then(d=>d.json()).then(d => {
+  console.log(d)
+  for(const item of d.result) {
+  item._type = "user"
+  nr.push(item)
+  }
+  })
+      localStorage.setItem("groupchatlist", JSON.stringify(nr))
+
   }
 
 
@@ -51,15 +69,22 @@ if(!localStorage.getItem("groupchatlist")) {
       },
       body: JSON.stringify(new JSONRPCHandler()
         .setMethod("getAvatar")
-        .setPayload({groupId: item.id})
+        .setPayload(item.id ? {groupId: item.id } : { profile: item.uuid})
         .build()),
     }).then(r=>r.json()).then(d=>{
       console.log(d)
     return d.error ? "https://gravatar.com/avatar/27205e5c51cb03f862138b22bcb5dc20f94a342e744ff6df1b8dc8af3c865109?f=y" : `data:image/png;base64,${d.result.data}`
   })
     item.avatar = avatar
+    item.handleClick = () => {
+    showChats0 = true;
+    alert("cha")
+    }
     chats.push(item)
   }
+
+
+
 }
 // debugger;
 
@@ -76,11 +101,26 @@ if(!localStorage.getItem("groupchatlist")) {
   
   <!-- <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">Most played songs this week</li> -->
   
-  <li v-for="chat in chats"class="list-row">
+  <li v-for="chat in chats"class="list-row" @click="chat.handleClick()">
+   <div v-if="chat._type == 'group'" >
     <div><img class="size-10 rounded-box" :src="chat.avatar"/></div>
     <div>
-      <div>{{ chat.name}}</div>
-      <div class="text-xs font-semibold opacity-60">ig the last msg is here??</div>
+      <div>{{ chat.name || chat.username}}</div>
+      <div class="text-xs font-semibold opacity-60">
+      <div v-if="chat.lastMessage">{{ chat.lastMessage }}</div><div v-else>
+      <span class="loading loading-spinner loading-xs"></span>
+      </div>
+      </div>
+    </div>
+    </div>
+    <div v-else>
+    <div><img class="size-10 rounded-box" :src="chat.avatar"/></div>
+    <div>
+      <div>{{ chat.name || chat.username}}</div>
+      <div class="text-xs font-semibold opacity-60"> <div v-if="chat.lastMessage">{{ chat.lastMessage }}</div><div v-else>
+      <span class="loading loading-spinner loading-xs"></span>
+      </div></div>
+    </div>
     </div>
   </li>
 <!--   
@@ -113,6 +153,9 @@ if(!localStorage.getItem("groupchatlist")) {
 </div>
 </div>
 <div class="justify-between w-3/4 top-5 absolute right-10">
-<Chats />
+<Chats v-if="showChats0" skeleton="!ShowChats1" />
+<div v-else>
+<h1 class="text-6xl text-center mt-50 animate-spin">:3</h1>
+</div>
 </div>
 </template>
