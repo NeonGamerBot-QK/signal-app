@@ -11,11 +11,11 @@ interface JsonRPCInterface {
   setPayload(d: any): JsonRPCHandler;
 }
 type JsonRPCPayload = {
-jsonrpc: string | "2.0";
-method: string;
-id: string;
-params?: any;
-}
+  jsonrpc: string | "2.0";
+  method: string;
+  id: string;
+  params?: any;
+};
 export class JsonRPCHandler implements JsonRPCInterface {
   private cbMethod: string;
   private payloadData: any;
@@ -43,13 +43,13 @@ export class JsonRPCHandler implements JsonRPCInterface {
     this.payloadData = d;
     return this;
   }
-  public build():JsonRPC {
+  public build(): JsonRPC {
     return {
-        id: this.id,
-        jsonrpc: "2.0",
-        method: this.cbMethod!,
-        params: this.payloadData
-    } as JsonRPC
+      id: this.id,
+      jsonrpc: "2.0",
+      method: this.cbMethod!,
+      params: this.payloadData,
+    } as JsonRPC;
   }
 }
 export default JsonRPCHandler;
