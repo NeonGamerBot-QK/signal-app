@@ -14,6 +14,7 @@
     "@vueuse/core": "^13.1.0",
     "daisyui": "^5.0.35",
     "h3": "^1.15.3",
+    "localforage": "^1.10.0",
     "nuxt": "^3.17.2",
     "tailwindcss": "^4.1.6",
     "uuid": "^11.1.0",

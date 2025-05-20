@@ -6,6 +6,7 @@ const cmDate = new Date(
 ).toISOString();
 
 import tailwindcss from "@tailwindcss/vite";
+import localforage from 'localforage'
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   app: {
@@ -40,4 +41,7 @@ export default defineNuxtConfig({
       tailwindcss(),
     ],
   },
+  provide: {
+    localforage
+  }
 })

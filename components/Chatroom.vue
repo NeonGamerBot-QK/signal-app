@@ -1,24 +1,38 @@
 <script setup lang="ts">
 import { useWebSocket } from '@vueuse/core'
 import JSONRPCHandler from '../util/jsonrpc'
+
 const urlCookie = useCookie("ws-url")
+
 console.log(process.browser)
 let chats = []
-let showChats0 = false;
-let ShowChats1 = false;
+// WHY DOES IT HAVE TO BE STRINGS
+let showChats0 = useState('showChats0', 'n');
+let ShowChats1 = useState('ShowChats1', 'n');
 if(process.browser) {
+const { IndexedDBService } = await import( '../util/indexdb')
+const messagesDb = new IndexedDBService('signal', 'messages')
+
 window.JSONRPCHandler = JSONRPCHandler
 const evtSource = new window.EventSource(`/api/events`, {
   withCredentials: true,
 });
-evtSource.onmessage = (event) => {
-console.log(event, event.data)
+evtSource.addEventListener("receive", async (e) => {
+  const payload = JSON.parse(e.data)
+  console.log(payload)
+  if(payload.envelope) {
+  if(payload.envelope.dataMessage) {
+    let currentMsgs = null;
+try {
+currentMsgs =     await messagesDb.getItem(payload.envelope.sourceAddress) || []
+} catch (e) {
+  currentMsgs = []
 }
-evtSource.addEventListener("notice", (e) => {
-  console.log(e.data);
-});
-evtSource.addEventListener("receive", (e) => {
-  console.log(e.data);
+    const newMsgs = [...currentMsgs, payload.envelope.dataMessage]
+    await messagesDb.setItem(payload.envelope.sourceAddress, JSON.stringify(newMsgs))
+    consiole.log("INSERT MESSAGE")
+  }
+  }
 });
 if(!localStorage.getItem("groupchatlist")) {
   const nr = []
@@ -77,15 +91,17 @@ await  fetch('/api/send', {
   })
     item.avatar = avatar
     item.handleClick = () => {
-    showChats0 = true;
+    showChats0.value = 'y';
     alert("cha")
     }
     chats.push(item)
   }
 
 
+  }
+onMounted(() => {
 
-}
+})
 // debugger;
 
 </script>
@@ -123,37 +139,11 @@ await  fetch('/api/send', {
     </div>
     </div>
   </li>
-<!--   
-  <li class="list-row">
-    <div><img class="size-10 rounded-box" src="https://img.daisyui.com/images/profile/demo/4@94.webp"/></div>
-    <div>
-      <div>Ellie Beilish</div>
-      <div class="text-xs uppercase font-semibold opacity-60">Bears of a fever</div>
-    </div>
-  </li>
-  
-  <li class="list-row">
-    <div><img class="size-10 rounded-box" src="https://img.daisyui.com/images/profile/demo/3@94.webp"/></div>
-    <div>
-      <div>Sabrino Gardener</div>
-      <div class="text-xs uppercase font-semibold opacity-60">Cappuccino</div>
-    </div>
-    <p class="list-col-wrap text-xs">
-      "Cappuccino" quickly gained attention for its smooth melody and relatable themes. The song’s success propelled Sabrino into the spotlight, solidifying their status as a rising star.
-    </p>
-    <button class="btn btn-square btn-ghost">
-      <svg class="size-[1.2em]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-linejoin="round" stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor"><path d="M6 3L20 12 6 21 6 3z"></path></g></svg>
-    </button>
-    <button class="btn btn-square btn-ghost">
-      <svg class="size-[1.2em]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g stroke-linejoin="round" stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></g></svg>
-    </button>
-  </li> -->
-  
 </ul>
 </div>
 </div>
 <div class="justify-between w-3/4 top-5 absolute right-10">
-<Chats v-if="showChats0" skeleton="!ShowChats1" />
+<Chats v-if="showChats0 == 'y'" skeleton="ShowChats1 == 'n'" />
 <div v-else>
 <h1 class="text-6xl text-center mt-50 animate-spin">:3</h1>
 </div>

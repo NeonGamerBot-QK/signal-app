@@ -1,6 +1,7 @@
 <script setup type="ts">
 defineProps({
-  skeleton: Boolean
+  skeleton: Boolean,
+  chats: Object
 })
 </script>
 <template>
