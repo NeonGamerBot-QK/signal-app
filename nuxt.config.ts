@@ -2,11 +2,11 @@
 import { execSync } from "child_process";
 const cmSha = execSync("git rev-parse --short HEAD").toString();
 const cmDate = new Date(
-  parseInt(execSync("git log -1 --format=%ct").toString().trim()) * 1000
+  parseInt(execSync("git log -1 --format=%ct").toString().trim()) * 1000,
 ).toISOString();
 
 import tailwindcss from "@tailwindcss/vite";
-import localforage from 'localforage'
+import localforage from "localforage";
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   app: {
@@ -27,7 +27,7 @@ export default defineNuxtConfig({
       ],
     },
   },
-  compatibilityDate: '2024-11-01',
+  compatibilityDate: "2024-11-01",
   devtools: { enabled: true },
   runtimeConfig: {
     public: {
@@ -35,13 +35,11 @@ export default defineNuxtConfig({
       date: cmDate,
     },
   },
-  css: ['~/assets/css/main.css'],
+  css: ["~/assets/css/main.css"],
   vite: {
-    plugins: [
-      tailwindcss(),
-    ],
+    plugins: [tailwindcss()],
   },
   provide: {
-    localforage
-  }
-})
+    localforage,
+  },
+});
