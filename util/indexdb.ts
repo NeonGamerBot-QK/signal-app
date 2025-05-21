@@ -19,7 +19,9 @@ export class KeyValueIndexedDB<T = any> {
    */
   constructor(dbName: string, storeName: string, dbVersion: number = 1) {
     if (!dbName || !storeName) {
-      throw new Error("dbName and storeName are required for KeyValueIndexedDB.");
+      throw new Error(
+        "dbName and storeName are required for KeyValueIndexedDB.",
+      );
     }
     if (dbVersion < 1 || !Number.isInteger(dbVersion)) {
       throw new Error("dbVersion must be a positive integer.");
@@ -40,22 +42,30 @@ export class KeyValueIndexedDB<T = any> {
     if (this.initializationPromise) return this.initializationPromise; // Initialization in progress
 
     this.initializationPromise = new Promise<void>((resolve, reject) => {
-      console.log(`[KeyValueIndexedDB] Attempting to open database '${this.dbName}' (Version: ${this.dbVersion})`);
+      console.log(
+        `[KeyValueIndexedDB] Attempting to open database '${this.dbName}' (Version: ${this.dbVersion})`,
+      );
       const request = indexedDB.open(this.dbName, this.dbVersion);
 
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
-        console.log(`[KeyValueIndexedDB] Upgrade needed for database '${this.dbName}' from version ${event.oldVersion} to ${event.newVersion}`);
+        console.log(
+          `[KeyValueIndexedDB] Upgrade needed for database '${this.dbName}' from version ${event.oldVersion} to ${event.newVersion}`,
+        );
 
         // If the object store already exists, delete it to ensure a clean slate
         // for schema changes (e.g., changing keyPath or autoIncrement behavior).
         // This is crucial if you ever previously created the store with a keyPath.
         if (db.objectStoreNames.contains(this.storeName)) {
-          console.warn(`[KeyValueIndexedDB] Deleting existing object store: ${this.storeName}`);
+          console.warn(
+            `[KeyValueIndexedDB] Deleting existing object store: ${this.storeName}`,
+          );
           db.deleteObjectStore(this.storeName);
         }
 
-        console.log(`[KeyValueIndexedDB] Creating new object store: ${this.storeName} (no keyPath, no autoIncrement)`);
+        console.log(
+          `[KeyValueIndexedDB] Creating new object store: ${this.storeName} (no keyPath, no autoIncrement)`,
+        );
         // Create the object store without a keyPath and without autoIncrement.
         // This means keys must be explicitly provided in `put(value, key)`.
         db.createObjectStore(this.storeName);
@@ -63,20 +73,27 @@ export class KeyValueIndexedDB<T = any> {
 
       request.onsuccess = () => {
         this.db = request.result;
-        console.log(`[KeyValueIndexedDB] Database '${this.dbName}' opened successfully.`);
+        console.log(
+          `[KeyValueIndexedDB] Database '${this.dbName}' opened successfully.`,
+        );
         this.db.onversionchange = () => {
-            // Handle cases where another tab requests a higher version
-            console.warn(`[KeyValueIndexedDB] Database version change detected. Closing connection.`);
-            this.db?.close();
-            this.db = undefined; // Mark as uninitialized
-            this.initializationPromise = null;
-            alert("Database schema updated. Please reload this page.");
+          // Handle cases where another tab requests a higher version
+          console.warn(
+            `[KeyValueIndexedDB] Database version change detected. Closing connection.`,
+          );
+          this.db?.close();
+          this.db = undefined; // Mark as uninitialized
+          this.initializationPromise = null;
+          alert("Database schema updated. Please reload this page.");
         };
         resolve();
       };
 
       request.onerror = () => {
-        console.error(`[KeyValueIndexedDB] Error opening database '${this.dbName}':`, request.error);
+        console.error(
+          `[KeyValueIndexedDB] Error opening database '${this.dbName}':`,
+          request.error,
+        );
         this.initializationPromise = null; // Clear promise on error
         reject(request.error);
       };
@@ -84,7 +101,9 @@ export class KeyValueIndexedDB<T = any> {
       request.onblocked = () => {
         // This event fires if a new version is requested but older connections
         // to the database are still open, preventing the upgrade.
-        console.warn(`[KeyValueIndexedDB] Database upgrade blocked for '${this.dbName}'. Please close all other tabs using this database or refresh the page.`);
+        console.warn(
+          `[KeyValueIndexedDB] Database upgrade blocked for '${this.dbName}'. Please close all other tabs using this database or refresh the page.`,
+        );
         // You might want to notify the user or refresh the page here.
         this.initializationPromise = null; // Clear promise if blocked
         reject(new Error("Database access blocked by other open connections."));
@@ -102,18 +121,25 @@ export class KeyValueIndexedDB<T = any> {
    */
   private getStore(mode: IDBTransactionMode): IDBObjectStore {
     if (!this.db) {
-      throw new Error("Database not initialized. Call init() and await its completion before operations.");
+      throw new Error(
+        "Database not initialized. Call init() and await its completion before operations.",
+      );
     }
     // Ensure the object store name is valid for the current transaction
     if (!this.db.objectStoreNames.contains(this.storeName)) {
-        throw new Error(`Object store '${this.storeName}' does not exist in database '${this.dbName}'. This indicates a schema mismatch or unhandled upgrade.`);
+      throw new Error(
+        `Object store '${this.storeName}' does not exist in database '${this.dbName}'. This indicates a schema mismatch or unhandled upgrade.`,
+      );
     }
     const tx = this.db.transaction(this.storeName, mode);
     tx.onerror = (event) => {
-        console.error(`[KeyValueIndexedDB] Transaction error for store '${this.storeName}' in mode '${mode}':`, event.target?.error);
+      console.error(
+        `[KeyValueIndexedDB] Transaction error for store '${this.storeName}' in mode '${mode}':`,
+        event.target?.error,
+      );
     };
     tx.oncomplete = () => {
-        // console.log(`[KeyValueIndexedDB] Transaction for store '${this.storeName}' in mode '${mode}' completed.`);
+      // console.log(`[KeyValueIndexedDB] Transaction for store '${this.storeName}' in mode '${mode}' completed.`);
     };
     return tx.objectStore(this.storeName);
   }
@@ -133,11 +159,17 @@ export class KeyValueIndexedDB<T = any> {
 
         request.onsuccess = () => resolve();
         request.onerror = (event) => {
-          console.error(`[KeyValueIndexedDB] setItem Error for key '${key}':`, event.target?.error);
+          console.error(
+            `[KeyValueIndexedDB] setItem Error for key '${key}':`,
+            event.target?.error,
+          );
           reject(event.target?.error);
         };
       } catch (error) {
-        console.error(`[KeyValueIndexedDB] Error during setItem operation for key '${key}':`, error);
+        console.error(
+          `[KeyValueIndexedDB] Error during setItem operation for key '${key}':`,
+          error,
+        );
         reject(error);
       }
     });
@@ -157,11 +189,17 @@ export class KeyValueIndexedDB<T = any> {
 
         request.onsuccess = () => resolve(request.result);
         request.onerror = (event) => {
-          console.error(`[KeyValueIndexedDB] getItem Error for key '${key}':`, event.target?.error);
+          console.error(
+            `[KeyValueIndexedDB] getItem Error for key '${key}':`,
+            event.target?.error,
+          );
           reject(event.target?.error);
         };
       } catch (error) {
-        console.error(`[KeyValueIndexedDB] Error during getItem operation for key '${key}':`, error);
+        console.error(
+          `[KeyValueIndexedDB] Error during getItem operation for key '${key}':`,
+          error,
+        );
         reject(error);
       }
     });
@@ -181,11 +219,17 @@ export class KeyValueIndexedDB<T = any> {
 
         request.onsuccess = () => resolve();
         request.onerror = (event) => {
-          console.error(`[KeyValueIndexedDB] removeItem Error for key '${key}':`, event.target?.error);
+          console.error(
+            `[KeyValueIndexedDB] removeItem Error for key '${key}':`,
+            event.target?.error,
+          );
           reject(event.target?.error);
         };
       } catch (error) {
-        console.error(`[KeyValueIndexedDB] Error during removeItem operation for key '${key}':`, error);
+        console.error(
+          `[KeyValueIndexedDB] Error during removeItem operation for key '${key}':`,
+          error,
+        );
         reject(error);
       }
     });
@@ -204,11 +248,17 @@ export class KeyValueIndexedDB<T = any> {
 
         request.onsuccess = () => resolve();
         request.onerror = (event) => {
-          console.error(`[KeyValueIndexedDB] clear Error:`, event.target?.error);
+          console.error(
+            `[KeyValueIndexedDB] clear Error:`,
+            event.target?.error,
+          );
           reject(event.target?.error);
         };
       } catch (error) {
-        console.error(`[KeyValueIndexedDB] Error during clear operation:`, error);
+        console.error(
+          `[KeyValueIndexedDB] Error during clear operation:`,
+          error,
+        );
         reject(error);
       }
     });
@@ -221,19 +271,25 @@ export class KeyValueIndexedDB<T = any> {
   public async getAllKeys(): Promise<IDBValidKey[]> {
     await this.init();
     return new Promise<IDBValidKey[]>((resolve, reject) => {
-        try {
-            const store = this.getStore("readonly");
-            const request = store.getAllKeys();
+      try {
+        const store = this.getStore("readonly");
+        const request = store.getAllKeys();
 
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = (event) => {
-                console.error(`[KeyValueIndexedDB] getAllKeys Error:`, event.target?.error);
-                reject(event.target?.error);
-            };
-        } catch (error) {
-            console.error(`[KeyValueIndexedDB] Error during getAllKeys operation:`, error);
-            reject(error);
-        }
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = (event) => {
+          console.error(
+            `[KeyValueIndexedDB] getAllKeys Error:`,
+            event.target?.error,
+          );
+          reject(event.target?.error);
+        };
+      } catch (error) {
+        console.error(
+          `[KeyValueIndexedDB] Error during getAllKeys operation:`,
+          error,
+        );
+        reject(error);
+      }
     });
   }
 
@@ -244,19 +300,25 @@ export class KeyValueIndexedDB<T = any> {
   public async getAllValues(): Promise<T[]> {
     await this.init();
     return new Promise<T[]>((resolve, reject) => {
-        try {
-            const store = this.getStore("readonly");
-            const request = store.getAll(); // Note: getAll() fetches values, getAllKeys() fetches keys
+      try {
+        const store = this.getStore("readonly");
+        const request = store.getAll(); // Note: getAll() fetches values, getAllKeys() fetches keys
 
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = (event) => {
-                console.error(`[KeyValueIndexedDB] getAllValues Error:`, event.target?.error);
-                reject(event.target?.error);
-            };
-        } catch (error) {
-            console.error(`[KeyValueIndexedDB] Error during getAllValues operation:`, error);
-            reject(error);
-        }
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = (event) => {
+          console.error(
+            `[KeyValueIndexedDB] getAllValues Error:`,
+            event.target?.error,
+          );
+          reject(event.target?.error);
+        };
+      } catch (error) {
+        console.error(
+          `[KeyValueIndexedDB] Error during getAllValues operation:`,
+          error,
+        );
+        reject(error);
+      }
     });
   }
 
