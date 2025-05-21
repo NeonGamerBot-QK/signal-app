@@ -6,13 +6,14 @@ const urlCookie = useCookie("ws-url");
 
 console.log(process.browser);
 let chats = [];
+let chatMessages = []
 // WHY DOES IT HAVE TO BE STRINGS
 let showChats0 = useState("showChats0", "n");
 let ShowChats1 = useState("ShowChats1", "n");
 if (process.browser) {
-  const { IndexedDBService } = await import("../util/indexdb");
-  const messagesDb = new IndexedDBService("signal", "messages");
-
+  const { KeyValueIndexedDB } = await import("../util/indexdb");
+  const messagesDb = new KeyValueIndexedDB("signal", "messages", 1);
+  await messagesDb.init();
   window.JSONRPCHandler = JSONRPCHandler;
   const evtSource = new window.EventSource(`/api/events`, {
     withCredentials: true,
@@ -20,24 +21,46 @@ if (process.browser) {
   evtSource.addEventListener("receive", async (e) => {
     const payload = JSON.parse(e.data);
     console.log(payload);
+    // TODO: look at https://hackclub.slack.com/files/U07L45W79E1/F08TBRE5Y21/image.png for example of when I send a msg and how to add it
     if (payload.envelope) {
       if (payload.envelope.dataMessage) {
         let currentMsgs = null;
         try {
           currentMsgs =
-            (await messagesDb.getItem(payload.envelope.sourceAddress)) || [];
+            JSON.parse(await messagesDb.getItem(payload.envelope.sourceUuid)) || [];
         } catch (e) {
           currentMsgs = [];
         }
-        const newMsgs = [...currentMsgs, payload.envelope.dataMessage];
+        const newMsgs = [...currentMsgs, payload.envelope];
+        console.log(payload.envelope.sourceUuid, newMsgs)
         await messagesDb.setItem(
-          payload.envelope.sourceAddress,
+          payload.envelope.sourceUuid || "1",
           JSON.stringify(newMsgs),
         );
-        consiole.log("INSERT MESSAGE");
+        console.log("INSERT MESSAGE");
       }
     }
   });
+  if (!localStorage.getItem("myinfo")) {
+    // takes first device because we cant be multi device atm :3\
+    await fetch('/api/send', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(
+        new JSONRPCHandler()
+          .setMethod("listAccounts")
+          .setPayload({})
+          .build(),
+      ),
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        console.log(d);
+        localStorage.setItem("myinfo", JSON.stringify(d.result[0]));
+      });
+  }
   if (!localStorage.getItem("groupchatlist")) {
     const nr = [];
     console.log("gc list");
@@ -101,9 +124,14 @@ if (process.browser) {
           : `data:image/png;base64,${d.result.data}`;
       });
     item.avatar = avatar;
-    item.handleClick = () => {
+    item.handleClick = async () => {
       showChats0.value = "y";
       alert("cha");
+      // pull from indexdb to extract 
+      const chatsDbMessageS = await messagesDb.getItem(item.id || item.uuid);
+      const dbmessages = JSON.parse(chatsDbMessageS)
+      console.log(dbmessages);
+      chatMessages = dbmessages;1
     };
     chats.push(item);
   }
@@ -152,7 +180,7 @@ onMounted(() => {});
     </div>
   </div>
   <div class="justify-between w-3/4 top-5 absolute right-10">
-    <Chats v-if="showChats0 == 'y'" skeleton="ShowChats1 == 'n'" />
+    <Chats v-if="showChats0 == 'y'" :skeleton="ShowChats1 == 'n'":messages="chatMessages" :n="1" />
     <div v-else>
       <h1 class="text-6xl text-center mt-50 animate-spin">:3</h1>
     </div>

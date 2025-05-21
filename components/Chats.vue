@@ -1,8 +1,9 @@
 <script setup type="ts">
-defineProps({
-  skeleton: Boolean,
-  chats: Object
-})
+const props = defineProps(['messages', 'n'])
+console.log(props.messages)
+// let n = null;
+// console.log(n)
+// console.log('from chats.vue', messages)
 </script>
 <template>
   <div class="chat chat-start">
