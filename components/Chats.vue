@@ -8,7 +8,7 @@ let cm  = []
 let foundAvatars = {};
 
 for(const m of props.messages ) {
-  const item = m; 
+  const item = m;
 const avatar = foundAvatars[item.sourceUuid] ? foundAvatars[item.sourceUuid] :  await fetch(`/api/send`, {
       method: "POST",
       headers: {
@@ -35,47 +35,50 @@ const avatar = foundAvatars[item.sourceUuid] ? foundAvatars[item.sourceUuid] :  
 </script>
 <template>
   <div class="overflow-y-auto max-h-screen overflow-x-hidden m-0">
-  <div v-for="msg in cm" >
-<div  v-if="msg.dataMessage"> 
- <div class="chat chat-start">
-    <div class="chat-image avatar">
-      <div class="w-10 rounded-full">
-        <img
-          alt="User avatar"
-          :src="msg.avatar"
-        />
+    <div v-for="msg in cm">
+      <div v-if="msg.dataMessage">
+        <div class="chat chat-start">
+          <div class="chat-image avatar">
+            <div class="w-10 rounded-full">
+              <img alt="User avatar" :src="msg.avatar" />
+            </div>
+          </div>
+          <div class="chat-header">
+            {{ msg.sourceName }}
+            <time
+              class="text-xs opacity-50"
+              :datetime="$dayjs(msg.timestamp).utc().toString()"
+              >{{ $dayjs(msg.timestamp).utc().fromNow() }}</time
+            >
+          </div>
+          <div class="chat-bubble">{{ msg.dataMessage.message }}</div>
+          <!--  TODO add icon for when msg expires -->
+          <!-- <div class="chat-footer opacity-50">Delivered</div> -->
+        </div>
+      </div>
+
+      <div v-else-if="msg.syncMessage">
+        <div class="chat chat-end">
+          <div class="chat-image avatar">
+            <div class="w-10 rounded-full">
+              <img alt="Avatar" :src="msg.avatar" />
+            </div>
+          </div>
+          <div class="chat-header">
+            {{ msg.sourceName }}
+            <!-- <time class="text-xs opacity-50">12:46</time> -->
+            <time
+              class="text-xs opacity-50"
+              :datetime="$dayjs(msg.timestamp).utc().toString()"
+              >{{ $dayjs(msg.timestamp).utc().fromNow() }}</time
+            >
+          </div>
+          <div class="chat-bubble">
+            {{ msg.syncMessage.sentMessage.message }}
+          </div>
+          <!-- <div class="chat-footer opacity-50">Seen at 12:46</div> -->
+        </div>
       </div>
     </div>
-    <div class="chat-header">
-       {{msg.sourceName}}
-      <time class="text-xs opacity-50" :datetime="$dayjs(msg.timestamp).utc().toString()">{{ $dayjs(msg.timestamp).utc().fromNow() }}</time>
-    </div>
-    <div class="chat-bubble"> {{msg.dataMessage.message }}</div>
-<!--  TODO add icon for when msg expires -->
-    <!-- <div class="chat-footer opacity-50">Delivered</div> -->
   </div>
-</div>
-
-  <div v-else-if="msg.syncMessage">
-    <div class="chat chat-end">
-    <div class="chat-image avatar">
-      <div class="w-10 rounded-full">
-        <img
-          alt="Avatar"
-          :src="msg.avatar"
-        />
-      </div>
-    </div>
-    <div class="chat-header">
-     {{msg.sourceName}}
-      <!-- <time class="text-xs opacity-50">12:46</time> -->
-      <time class="text-xs opacity-50" :datetime="$dayjs(msg.timestamp).utc().toString()">{{ $dayjs(msg.timestamp).utc().fromNow() }}</time>
-
-    </div>
-    <div class="chat-bubble">{{ msg.syncMessage.sentMessage.message }}</div>
-    <!-- <div class="chat-footer opacity-50">Seen at 12:46</div> -->
-  </div>
-  </div>
-  </div>
-</div>
 </template>
