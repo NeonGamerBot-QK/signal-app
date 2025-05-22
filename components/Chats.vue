@@ -1,41 +1,81 @@
 <script setup type="ts">
-const props = defineProps(['messages', 'n'])
-console.log(props.messages)
-// let n = null;
+const props = defineProps(['messages', 'n', 'skeleton'])
+console.log(props.messages, "chat what do i do with allat")
+let n = null;
+let cm  = []
 // console.log(n)
 // console.log('from chats.vue', messages)
+let foundAvatars = {};
+
+for(const m of props.messages ) {
+  const item = m; 
+const avatar = foundAvatars[item.sourceUuid] ? foundAvatars[item.sourceUuid] :  await fetch(`/api/send`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(
+        new JSONRPCHandler()
+          .setMethod("getAvatar")
+          .setPayload({ profile: item.sourceUuid })
+          .build(),
+      ),
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        console.log(d);
+        return d.error
+          ? "https://gravatar.com/avatar/27205e5c51cb03f862138b22bcb5dc20f94a342e744ff6df1b8dc8af3c865109?f=y"
+          : `data:image/png;base64,${d.result.data}`;
+      });
+      m.avatar = avatar;
+      foundAvatars[item.sourceUuid] = avatar;
+    cm.push(m)
+}
 </script>
 <template>
-  <div class="chat chat-start">
+  <div class="overflow-y-auto max-h-screen overflow-x-hidden m-0">
+  <div v-for="msg in cm" >
+<div  v-if="msg.dataMessage"> 
+ <div class="chat chat-start">
     <div class="chat-image avatar">
       <div class="w-10 rounded-full">
         <img
-          alt="Tailwind CSS chat bubble component"
-          src="https://img.daisyui.com/images/profile/demo/kenobee@192.webp"
+          alt="User avatar"
+          :src="msg.avatar"
         />
       </div>
     </div>
     <div class="chat-header">
-      Obi-Wan Kenobi
-      <time class="text-xs opacity-50">12:45</time>
+       {{msg.sourceName}}
+      <time class="text-xs opacity-50" :datetime="$dayjs(msg.timestamp).utc().toString()">{{ $dayjs(msg.timestamp).utc().fromNow() }}</time>
     </div>
-    <div class="chat-bubble">You were the Chosen One!</div>
-    <div class="chat-footer opacity-50">Delivered</div>
+    <div class="chat-bubble"> {{msg.dataMessage.message }}</div>
+<!--  TODO add icon for when msg expires -->
+    <!-- <div class="chat-footer opacity-50">Delivered</div> -->
   </div>
-  <div class="chat chat-end">
+</div>
+
+  <div v-else-if="msg.syncMessage">
+    <div class="chat chat-end">
     <div class="chat-image avatar">
       <div class="w-10 rounded-full">
         <img
-          alt="Tailwind CSS chat bubble component"
-          src="https://img.daisyui.com/images/profile/demo/anakeen@192.webp"
+          alt="Avatar"
+          :src="msg.avatar"
         />
       </div>
     </div>
     <div class="chat-header">
-      Anakin
-      <time class="text-xs opacity-50">12:46</time>
+     {{msg.sourceName}}
+      <!-- <time class="text-xs opacity-50">12:46</time> -->
+      <time class="text-xs opacity-50" :datetime="$dayjs(msg.timestamp).utc().toString()">{{ $dayjs(msg.timestamp).utc().fromNow() }}</time>
+
     </div>
-    <div class="chat-bubble">I hate you!</div>
-    <div class="chat-footer opacity-50">Seen at 12:46</div>
+    <div class="chat-bubble">{{ msg.syncMessage.sentMessage.message }}</div>
+    <!-- <div class="chat-footer opacity-50">Seen at 12:46</div> -->
   </div>
+  </div>
+  </div>
+</div>
 </template>

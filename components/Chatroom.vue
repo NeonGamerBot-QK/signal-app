@@ -6,11 +6,15 @@ const urlCookie = useCookie("ws-url");
 
 console.log(process.browser);
 let chats = [];
-let chatMessages = [];
+// let chatMessages = [];
+// useState
+// import { useState } from "nuxt/app";
+const chatMessages = useState("chatMessages", () => { return [] });
 // WHY DOES IT HAVE TO BE STRINGS
 let showChats0 = useState("showChats0", "n");
 let ShowChats1 = useState("ShowChats1", "n");
-if (process.browser) {
+// onMounted(async () => {
+if (process.client) {
   const { KeyValueIndexedDB } = await import("../util/indexdb");
   const messagesDb = new KeyValueIndexedDB("signal", "messages", 1);
   await messagesDb.init();
@@ -21,8 +25,24 @@ if (process.browser) {
   evtSource.addEventListener("receive", async (e) => {
     const payload = JSON.parse(e.data);
     console.log(payload);
-    // TODO: look at https://hackclub.slack.com/files/U07L45W79E1/F08TBRE5Y21/image.png for example of when I send a msg and how to add it
     if (payload.envelope) {
+      if(payload.envelope.syncMessage) {
+         let currentMsgs = null;
+        try {
+          currentMsgs =
+            JSON.parse(await messagesDb.getItem(payload.envelope.syncMessage.sentMessage.destinationUuid)) ||
+            [];
+        } catch (e) {
+          currentMsgs = [];
+        }
+        const newMsgs = [...currentMsgs, payload.envelope];
+        console.log(payload.envelope.sourceUuid, newMsgs);
+        await messagesDb.setItem(
+          payload.envelope.syncMessage.sentMessage.destinationUuid || "1",
+          JSON.stringify(newMsgs),
+        );
+        console.log("INSERT MY MESSAGE");
+      }
       if (payload.envelope.dataMessage) {
         let currentMsgs = null;
         try {
@@ -40,7 +60,17 @@ if (process.browser) {
         );
         console.log("INSERT MESSAGE");
       }
+      // update lastMessage 
+      const groupChatList = JSON.parse(localStorage.getItem("groupchatlist"));
+      for (const item of groupChatList) {
+        if ((item.id||item.uuid) == payload.envelope.sourceUuid) {
+          item.lastMessage = payload.envelope.dataMessage.message;
+          console.log("found it");
+        }
+      }
+      localStorage.setItem("groupchatlist", JSON.stringify(groupChatList));
     }
+
   });
   if (!localStorage.getItem("myinfo")) {
     // takes first device because we cant be multi device atm :3\
@@ -123,23 +153,25 @@ if (process.browser) {
       });
     item.avatar = avatar;
     item.handleClick = async () => {
-      showChats0.value = "y";
       alert("cha");
       // pull from indexdb to extract
       const chatsDbMessageS = await messagesDb.getItem(item.id || item.uuid);
       const dbmessages = JSON.parse(chatsDbMessageS);
       console.log(dbmessages);
-      chatMessages = dbmessages;
-      1;
+      // chatMessages = dbmessages;
+      // update the state value
+      chatMessages.value = dbmessages;
+      showChats0.value = "y";
     };
     chats.push(item);
   }
 }
-onMounted(() => {});
+// })
+// onMounted(() => {});
 // debugger;
 </script>
 <template>
-  <div class="bg-[#313244] rounded h-screen w-1/5 p-5">
+  <div class="bg-[#313244] rounded h-screen w-1/5 p-5 ">
     <h1 class="font-bold text-2xl">Chats</h1>
     <hr />
     <div>
@@ -181,7 +213,6 @@ onMounted(() => {});
   <div class="justify-between w-3/4 top-5 absolute right-10">
     <Chats
       v-if="showChats0 == 'y'"
-      :skeleton="ShowChats1 == 'n'"
       :messages="chatMessages"
       :n="1"
     />
