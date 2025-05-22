@@ -1,7 +1,3 @@
-export function loadGCs( ) {
+export function loadGCs() {}
 
-}
-
-export function loadMyInf() {
-    
-}
+export function loadMyInf() {}
