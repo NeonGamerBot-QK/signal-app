@@ -9,7 +9,9 @@ let chats = [];
 // let chatMessages = [];
 // useState
 // import { useState } from "nuxt/app";
-const chatMessages = useState("chatMessages", () => { return [] });
+const chatMessages = useState("chatMessages", () => {
+  return [];
+});
 // WHY DOES IT HAVE TO BE STRINGS
 let showChats0 = useState("showChats0", "n");
 let ShowChats1 = useState("ShowChats1", "n");
@@ -26,12 +28,15 @@ if (process.client) {
     const payload = JSON.parse(e.data);
     console.log(payload);
     if (payload.envelope) {
-      if(payload.envelope.syncMessage) {
-         let currentMsgs = null;
+      if (payload.envelope.syncMessage) {
+        let currentMsgs = null;
         try {
           currentMsgs =
-            JSON.parse(await messagesDb.getItem(payload.envelope.syncMessage.sentMessage.destinationUuid)) ||
-            [];
+            JSON.parse(
+              await messagesDb.getItem(
+                payload.envelope.syncMessage.sentMessage.destinationUuid,
+              ),
+            ) || [];
         } catch (e) {
           currentMsgs = [];
         }
@@ -60,17 +65,16 @@ if (process.client) {
         );
         console.log("INSERT MESSAGE");
       }
-      // update lastMessage 
+      // update lastMessage
       const groupChatList = JSON.parse(localStorage.getItem("groupchatlist"));
       for (const item of groupChatList) {
-        if ((item.id||item.uuid) == payload.envelope.sourceUuid) {
+        if ((item.id || item.uuid) == payload.envelope.sourceUuid) {
           item.lastMessage = payload.envelope.dataMessage.message;
           console.log("found it");
         }
       }
       localStorage.setItem("groupchatlist", JSON.stringify(groupChatList));
     }
-
   });
   if (!localStorage.getItem("myinfo")) {
     // takes first device because we cant be multi device atm :3\
@@ -171,7 +175,7 @@ if (process.client) {
 // debugger;
 </script>
 <template>
-  <div class="bg-[#313244] rounded h-screen w-1/5 p-5 ">
+  <div class="bg-[#313244] rounded h-screen w-1/5 p-5">
     <h1 class="font-bold text-2xl">Chats</h1>
     <hr />
     <div>
@@ -211,11 +215,7 @@ if (process.client) {
     </div>
   </div>
   <div class="justify-between w-3/4 top-5 absolute right-10">
-    <Chats
-      v-if="showChats0 == 'y'"
-      :messages="chatMessages"
-      :n="1"
-    />
+    <Chats v-if="showChats0 == 'y'" :messages="chatMessages" :n="1" />
     <div v-else>
       <h1 class="text-6xl text-center mt-50 animate-spin">:3</h1>
     </div>
