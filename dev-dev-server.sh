@@ -1,3 +1,3 @@
-signal-cli daemon --tcp --http --receive-mode=manual 
+signal-cli daemon --tcp --http --receive-mode=manual
 
-#--send-read-receipts 
+#--send-read-receipts
