@@ -49,3 +49,14 @@ export interface GroupInfo {
   revision: number;
   type: string;
 }
+
+export interface Attachment {
+  contentType: string;
+  filename: string;
+  id: string;
+  size: number;
+  width: number;
+  height: number;
+  caption?: any;
+  uploadTimestamp: number;
+}

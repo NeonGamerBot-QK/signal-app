@@ -1,9 +1,6 @@
 <script setup lang="ts">
-import { useWebSocket } from "@vueuse/core";
 import JSONRPCHandler from "../util/jsonrpc";
-
-const urlCookie = useCookie("ws-url");
-
+import { makeArequest } from "../util/chat";
 console.log(import.meta.browser);
 const chats = [];
 const chatMessages = useState("chatMessages", () => {
@@ -31,8 +28,8 @@ if (import.meta.client) {
           currentMsgs =
             JSON.parse(
               await messagesDb.getItem(
-                payload.envelope.syncMessage.sentMessage.destinationUuid,
-              ),
+                payload.envelope.syncMessage.sentMessage.destinationUuid
+              )
             ) || [];
         } catch (e) {
           currentMsgs = [];
@@ -41,7 +38,7 @@ if (import.meta.client) {
         console.log(payload.envelope.sourceUuid, newMsgs);
         await messagesDb.setItem(
           payload.envelope.syncMessage.sentMessage.destinationUuid || "1",
-          JSON.stringify(newMsgs),
+          JSON.stringify(newMsgs)
         );
         console.log("INSERT MY MESSAGE");
       }
@@ -58,7 +55,7 @@ if (import.meta.client) {
         console.log(payload.envelope.sourceUuid, newMsgs);
         await messagesDb.setItem(
           payload.envelope.sourceUuid || "1",
-          JSON.stringify(newMsgs),
+          JSON.stringify(newMsgs)
         );
         console.log("INSERT MESSAGE");
       }
@@ -81,83 +78,48 @@ if (import.meta.client) {
 
   if (!localStorage.getItem("myinfo")) {
     // takes first device because we cant be multi device atm :3\
-    await fetch("/api/send", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(
-        new JSONRPCHandler().setMethod("listAccounts").setPayload({}).build(),
-      ),
-    })
-      .then((r) => r.json())
-      .then((d) => {
-        console.log(d);
-        localStorage.setItem("myinfo", JSON.stringify(d.result[0]));
-      });
+    await makeArequest(
+      new JSONRPCHandler().setMethod("listAccounts").setPayload({})
+    ).then((d) => {
+      console.log(d);
+      localStorage.setItem("myinfo", JSON.stringify(d.result[0]));
+    });
   }
   if (!localStorage.getItem("groupchatlist")) {
     const nr = [];
     console.log("gc list");
-    const gcList = await fetch("/api/send", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(
-        new JSONRPCHandler().setMethod("listGroups").setPayload({}).build(),
-      ),
-    })
-      .then((rr) => rr.json())
-      .then(async (d) => {
-        console.log(d.result);
-        for (const item of d.result) {
-          item._type = "group";
-          nr.push(item);
-        }
-      });
-    await fetch("/api/send", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(
-        new JSONRPCHandler().setMethod("listContacts").build(),
-      ),
-    })
-      .then((d) => d.json())
-      .then((d) => {
+    const gcList = await loadGCs().then(async (d) => {
+      console.log(d.result);
+      for (const item of d.result) {
+        item._type = "group";
+        nr.push(item);
+      }
+    });
+    await makeArequest(new JSONRPCHandler().setMethod("listContacts")).then(
+      (d) => {
         console.log(d);
         for (const item of d.result) {
           item._type = "user";
           nr.push(item);
         }
-      });
+      }
+    );
     localStorage.setItem("groupchatlist", JSON.stringify(nr));
   }
 
   // end of rescans
   // load vars
   for (const item of JSON.parse(localStorage.getItem("groupchatlist"))) {
-    const avatar = await fetch(`/api/send`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(
-        new JSONRPCHandler()
-          .setMethod("getAvatar")
-          .setPayload(item.id ? { groupId: item.id } : { profile: item.uuid })
-          .build(),
-      ),
-    })
-      .then((r) => r.json())
-      .then((d) => {
-        console.log(d);
-        return d.error
-          ? "https://gravatar.com/avatar/27205e5c51cb03f862138b22bcb5dc20f94a342e744ff6df1b8dc8af3c865109?f=y"
-          : `data:image/png;base64,${d.result.data}`;
-      });
+    const avatar = await makeArequest(
+      new JSONRPCHandler()
+        .setMethod("getAvatar")
+        .setPayload(item.id ? { groupId: item.id } : { profile: item.uuid })
+    ).then((d) => {
+      console.log(d);
+      return d.error
+        ? "https://gravatar.com/avatar/27205e5c51cb03f862138b22bcb5dc20f94a342e744ff6df1b8dc8af3c865109?f=y"
+        : `data:image/png;base64,${d.result.data}`;
+    });
     item.avatar = avatar;
     item.handleClick = async () => {
       alert("cha");
@@ -167,30 +129,33 @@ if (import.meta.client) {
       console.log(dbmessages);
       const oldLength = parseInt(dbmessages.length.toString());
       // before we pass dbmessages please format it to unload expired messages
-      dbmessages = dbmessages.filter((msg) => {
-        if (msg.dataMessage)
-          return (
-            Date.now() >
-            msg.dataMessage.timestamp + msg.dataMessage.expiresInSeconds * 1000
-          );
-        if (msg.syncMessage) {
-          console.log(
-            msg.syncMessage.sentMessage,
-            msg.syncMessage.sentMessage.timestamp,
-            msg.syncMessage.sentMessage.expiresInSeconds * 1000,
-            `${Date.now()} > ${msg.syncMessage.sentMessage.timestamp + msg.syncMessage.sentMessage.expiresInSeconds * 1000}`,
-          );
-          return (
-            Date.now() <
-            msg.syncMessage.sentMessage.timestamp +
-              msg.syncMessage.sentMessage.expiresInSeconds * 1000
-          );
-        }
-        return true;
-      });
-      // if(oldLength != dbmessages.length) {
+      // dbmessages = dbmessages.filter((msg) => {
+      //   if (msg.dataMessage)
+      //     return (
+      //       Date.now() >
+      //       msg.dataMessage.timestamp + msg.dataMessage.expiresInSeconds * 1000
+      //     );
+      //   if (msg.syncMessage) {
+      //     console.log(
+      //       msg.syncMessage.sentMessage,
+      //       msg.syncMessage.sentMessage.timestamp,
+      //       msg.syncMessage.sentMessage.expiresInSeconds * 1000,
+      //       `${Date.now()} > ${msg.syncMessage.sentMessage.timestamp + msg.syncMessage.sentMessage.expiresInSeconds * 1000}`
+      //     );
+      //     return (
+      //       Date.now() <
+      //       msg.syncMessage.sentMessage.timestamp +
+      //         msg.syncMessage.sentMessage.expiresInSeconds * 1000
+      //     );
+      //   }
+      //   return true;
+      // });
+      // if (oldLength != dbmessages.length) {
       //   console.log("Removed expired messages");
-      //   await messagesDb.setItem(item.id || item.uuid, JSON.stringify(dbmessages));
+      //   await messagesDb.setItem(
+      //     item.id || item.uuid,
+      //     JSON.stringify(dbmessages)
+      //   );
       // }
       // chatMessages = dbmessages;
       // update the state value

@@ -1,4 +1,5 @@
 <script setup type="ts">
+import { getAvatar } from '../util/chat';
 const props = defineProps(['messages', 'n', 'skeleton'])
 const n = null;
 const cm  = []
@@ -8,25 +9,8 @@ const foundAvatars = {};
 
 for(const m of props.messages ) {
   const item = m;
-const avatar = foundAvatars[item.sourceUuid] ? foundAvatars[item.sourceUuid] :  await fetch(`/api/send`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(
-        new JSONRPCHandler()
-          .setMethod("getAvatar")
-          .setPayload({ profile: item.sourceUuid })
-          .build(),
-      ),
-    })
-      .then((r) => r.json())
-      .then((d) => {
-        console.log(d);
-        return d.error
-          ? "https://gravatar.com/avatar/27205e5c51cb03f862138b22bcb5dc20f94a342e744ff6df1b8dc8af3c865109?f=y"
-          : `data:image/png;base64,${d.result.data}`;
-      });
+  item.sourceUuid
+const avatar = foundAvatars[item.sourceUuid] ? foundAvatars[item.sourceUuid] :  await getAvatar(item.sourceUuid);
       m.avatar = avatar;
       foundAvatars[item.sourceUuid] = avatar;
     cm.push(m)
@@ -72,7 +56,7 @@ const avatar = foundAvatars[item.sourceUuid] ? foundAvatars[item.sourceUuid] :  
                   class="bg-gray-200 dark:bg-gray-700 rounded-lg p-2"
                 >
                   <a
-                    :href="attachment.url"
+                    :href="`/api/download?a=${attachment.id}`"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="text-blue-500 hover:underline"
