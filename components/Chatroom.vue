@@ -6,16 +6,13 @@ const urlCookie = useCookie("ws-url");
 
 console.log(process.browser);
 let chats = [];
-// let chatMessages = [];
-// useState
-// import { useState } from "nuxt/app";
 const chatMessages = useState("chatMessages", () => {
   return [];
 });
+// sob 
 // WHY DOES IT HAVE TO BE STRINGS
 let showChats0 = useState("showChats0", "n");
 let ShowChats1 = useState("ShowChats1", "n");
-// onMounted(async () => {
 if (process.client) {
   const { KeyValueIndexedDB } = await import("../util/indexdb");
   const messagesDb = new KeyValueIndexedDB("signal", "messages", 1);
