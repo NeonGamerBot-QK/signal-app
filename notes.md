@@ -1,6 +1,6 @@
 # Notes for signal app (its a todo)
 
-- write demo data + ui 
+- write demo data + ui
 - [x] add image support for messsages
 - add support for sending messsages
 - [ ] add support for deleting messages after they expire
