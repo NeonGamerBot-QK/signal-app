@@ -49,4 +49,3 @@ export interface GroupInfo {
   revision: number;
   type: string;
 }
-
