@@ -9,7 +9,7 @@ let chats = [];
 const chatMessages = useState("chatMessages", () => {
   return [];
 });
-// sob 
+// sob
 // WHY DOES IT HAVE TO BE STRINGS
 let showChats0 = useState("showChats0", "n");
 let ShowChats1 = useState("ShowChats1", "n");
@@ -66,12 +66,11 @@ if (process.client) {
       const groupChatList = JSON.parse(localStorage.getItem("groupchatlist"));
       for (const item of groupChatList) {
         if ((item.id || item.uuid) == payload.envelope.sourceUuid) {
-if(payload.envelope.dataMessage) {
-          item.lastMessage = payload.envelope.dataMessage.message;
-} else if (payload.envelope.syncMessage) {
-  item.lastMessage =
-    payload.envelope.syncMessage.sentMessage.message;
-}
+          if (payload.envelope.dataMessage) {
+            item.lastMessage = payload.envelope.dataMessage.message;
+          } else if (payload.envelope.syncMessage) {
+            item.lastMessage = payload.envelope.syncMessage.sentMessage.message;
+          }
 
           console.log("found it");
         }
@@ -79,7 +78,7 @@ if(payload.envelope.dataMessage) {
       localStorage.setItem("groupchatlist", JSON.stringify(groupChatList));
     }
   });
-  
+
   if (!localStorage.getItem("myinfo")) {
     // takes first device because we cant be multi device atm :3\
     await fetch("/api/send", {
@@ -164,20 +163,31 @@ if(payload.envelope.dataMessage) {
       alert("cha");
       // pull from indexdb to extract
       const chatsDbMessageS = await messagesDb.getItem(item.id || item.uuid);
-      let dbmessages = JSON.parse(chatsDbMessageS || '[]');
+      let dbmessages = JSON.parse(chatsDbMessageS || "[]");
       console.log(dbmessages);
       const oldLength = parseInt(dbmessages.length.toString());
       // before we pass dbmessages please format it to unload expired messages
-      dbmessages = dbmessages.filter(
-        (msg) => {
-         if(msg.dataMessage) return Date.now() > (msg.dataMessage.timestamp + msg.dataMessage.expiresInSeconds * 1000);
-         if(msg.syncMessage){
-          console.log(msg.syncMessage.sentMessage, msg.syncMessage.sentMessage.timestamp, msg.syncMessage.sentMessage.expiresInSeconds*1000, `${Date.now()} > ${msg.syncMessage.sentMessage.timestamp + msg.syncMessage.sentMessage.expiresInSeconds * 1000}`);
-          return  Date.now() < (msg.syncMessage.sentMessage.timestamp + msg.syncMessage.sentMessage.expiresInSeconds * 1000);
-         }
-         return true;
-        },
-      );
+      dbmessages = dbmessages.filter((msg) => {
+        if (msg.dataMessage)
+          return (
+            Date.now() >
+            msg.dataMessage.timestamp + msg.dataMessage.expiresInSeconds * 1000
+          );
+        if (msg.syncMessage) {
+          console.log(
+            msg.syncMessage.sentMessage,
+            msg.syncMessage.sentMessage.timestamp,
+            msg.syncMessage.sentMessage.expiresInSeconds * 1000,
+            `${Date.now()} > ${msg.syncMessage.sentMessage.timestamp + msg.syncMessage.sentMessage.expiresInSeconds * 1000}`,
+          );
+          return (
+            Date.now() <
+            msg.syncMessage.sentMessage.timestamp +
+              msg.syncMessage.sentMessage.expiresInSeconds * 1000
+          );
+        }
+        return true;
+      });
       // if(oldLength != dbmessages.length) {
       //   console.log("Removed expired messages");
       //   await messagesDb.setItem(item.id || item.uuid, JSON.stringify(dbmessages));
@@ -198,7 +208,6 @@ if(payload.envelope.dataMessage) {
     <div>
       <!-- make a list of chats -->
       <ul class="list bg-base-100 rounded-box shadow-md">
-
         <li v-for="chat in chats" class="list-row" @click="chat.handleClick()">
           <div v-if="chat._type == 'group'">
             <div><img class="size-10 rounded-box" :src="chat.avatar" /></div>
