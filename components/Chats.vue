@@ -1,6 +1,5 @@
 <script setup type="ts">
 const props = defineProps(['messages', 'n', 'skeleton'])
-console.log(props.messages, "chat what do i do with allat")
 let n = null;
 let cm  = []
 // console.log(n)
@@ -51,12 +50,34 @@ const avatar = foundAvatars[item.sourceUuid] ? foundAvatars[item.sourceUuid] :  
               >{{ $dayjs(msg.timestamp).utc().fromNow() }}</time
             >
           </div>
-          <div class="chat-bubble">{{ msg.dataMessage.message }}</div>
+          <div class="chat-bubble">
+            <p v-for="line in (msg.dataMessage.message ? msg.dataMessage.message.split('\n') : [msg.dataMessage.message])">
+              {{ line }}
+            </p>
+            <!-- displaying attachments :3 -->
+            <div v-if="msg.dataMessage.attachments && msg.dataMessage.attachments.length > 0">
+              <div class="flex flex-wrap gap-2 mt-2">
+                <div
+                  v-for="(attachment, index) in msg.dataMessage.attachments"
+                  :key="index"
+                  class="bg-gray-200 dark:bg-gray-700 rounded-lg p-2"
+                >
+                  <a
+                    :href="attachment.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-blue-500 hover:underline"
+                  >
+                    {{ attachment.filename || `Attachment ${index + 1}` }}
+                  </a>
+                </div>
+              </div>
+              </div>
           <!--  TODO add icon for when msg expires -->
           <!-- <div class="chat-footer opacity-50">Delivered</div> -->
         </div>
       </div>
-
+    </div>
       <div v-else-if="msg.syncMessage">
         <div class="chat chat-end">
           <div class="chat-image avatar">
