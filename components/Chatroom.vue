@@ -4,16 +4,16 @@ import JSONRPCHandler from "../util/jsonrpc";
 
 const urlCookie = useCookie("ws-url");
 
-console.log(process.browser);
-let chats = [];
+console.log(import.meta.browser);
+const chats = [];
 const chatMessages = useState("chatMessages", () => {
   return [];
 });
 // sob
 // WHY DOES IT HAVE TO BE STRINGS
-let showChats0 = useState("showChats0", "n");
-let ShowChats1 = useState("ShowChats1", "n");
-if (process.client) {
+const showChats0 = useState("showChats0", "n");
+const ShowChats1 = useState("ShowChats1", "n");
+if (import.meta.client) {
   const { KeyValueIndexedDB } = await import("../util/indexdb");
   const messagesDb = new KeyValueIndexedDB("signal", "messages", 1);
   await messagesDb.init();
@@ -204,31 +204,31 @@ if (process.client) {
 <template>
   <div class="bg-[#313244] rounded h-screen w-1/5 p-5">
     <h1 class="font-bold text-2xl">Chats</h1>
-    <hr />
+    <hr >
     <div>
       <!-- make a list of chats -->
       <ul class="list bg-base-100 rounded-box shadow-md">
         <li v-for="chat in chats" class="list-row" @click="chat.handleClick()">
           <div v-if="chat._type == 'group'">
-            <div><img class="size-10 rounded-box" :src="chat.avatar" /></div>
+            <div><img class="size-10 rounded-box" :src="chat.avatar" ></div>
             <div>
               <div>{{ chat.name || chat.username }}</div>
               <div class="text-xs font-semibold opacity-60">
                 <div v-if="chat.lastMessage">{{ chat.lastMessage }}</div>
                 <div v-else>
-                  <span class="loading loading-spinner loading-xs"></span>
+                  <span class="loading loading-spinner loading-xs" />
                 </div>
               </div>
             </div>
           </div>
           <div v-else>
-            <div><img class="size-10 rounded-box" :src="chat.avatar" /></div>
+            <div><img class="size-10 rounded-box" :src="chat.avatar" ></div>
             <div>
               <div>{{ chat.name || chat.username }}</div>
               <div class="text-xs font-semibold opacity-60">
                 <div v-if="chat.lastMessage">{{ chat.lastMessage }}</div>
                 <div v-else>
-                  <span class="loading loading-spinner loading-xs"></span>
+                  <span class="loading loading-spinner loading-xs" />
                 </div>
               </div>
             </div>

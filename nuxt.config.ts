@@ -1,12 +1,12 @@
 // the echo versioning system
 import { execSync } from "child_process";
+
+import tailwindcss from "@tailwindcss/vite";
+import localforage from "localforage";
 const cmSha = execSync("git rev-parse --short HEAD").toString();
 const cmDate = new Date(
   parseInt(execSync("git log -1 --format=%ct").toString().trim()) * 1000,
 ).toISOString();
-
-import tailwindcss from "@tailwindcss/vite";
-import localforage from "localforage";
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   app: {
@@ -48,5 +48,5 @@ export default defineNuxtConfig({
     localforage,
   },
 
-  modules: ["dayjs-nuxt"],
+  modules: ["dayjs-nuxt", "@nuxt/eslint"],
 });

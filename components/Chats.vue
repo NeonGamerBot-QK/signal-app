@@ -1,10 +1,10 @@
 <script setup type="ts">
 const props = defineProps(['messages', 'n', 'skeleton'])
-let n = null;
-let cm  = []
+const n = null;
+const cm  = []
 // console.log(n)
 // console.log('from chats.vue', messages)
-let foundAvatars = {};
+const foundAvatars = {};
 
 for(const m of props.messages ) {
   const item = m;

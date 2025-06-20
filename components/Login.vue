@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // import Err from "./Error.vue"
-let url = "http://localhost:8080";
+const url = "http://localhost:8080";
 const curl = useCookie("ws-url");
 let error: string | null = null;
 async function testUrl() {
@@ -32,11 +32,11 @@ function saveURLAndSet() {
         </p>
         <Error v-if="error" :message="error" />
         <div class="flex flex-1">
-          <input type="text" class="input mr-5 p-1" v-model="url" />
-          <button class="btn btn-primary" v-on:click="testUrl">Test URL</button>
+          <input v-model="url" type="text" class="input mr-5 p-1" />
+          <button class="btn btn-primary" @click="testUrl">Test URL</button>
         </div>
         <br />
-        <button class="btn btn-primary" v-on:click="saveURLAndSet">Save</button>
+        <button class="btn btn-primary" @click="saveURLAndSet">Save</button>
       </div>
     </div>
   </div>
