@@ -51,11 +51,20 @@ const avatar = foundAvatars[item.sourceUuid] ? foundAvatars[item.sourceUuid] :  
             >
           </div>
           <div class="chat-bubble">
-            <p v-for="line in (msg.dataMessage.message ? msg.dataMessage.message.split('\n') : [msg.dataMessage.message])">
+            <p
+              v-for="line in msg.dataMessage.message
+                ? msg.dataMessage.message.split('\n')
+                : [msg.dataMessage.message]"
+            >
               {{ line }}
             </p>
             <!-- displaying attachments :3 -->
-            <div v-if="msg.dataMessage.attachments && msg.dataMessage.attachments.length > 0">
+            <div
+              v-if="
+                msg.dataMessage.attachments &&
+                msg.dataMessage.attachments.length > 0
+              "
+            >
               <div class="flex flex-wrap gap-2 mt-2">
                 <div
                   v-for="(attachment, index) in msg.dataMessage.attachments"
@@ -72,12 +81,12 @@ const avatar = foundAvatars[item.sourceUuid] ? foundAvatars[item.sourceUuid] :  
                   </a>
                 </div>
               </div>
-              </div>
-          <!--  TODO add icon for when msg expires -->
-          <!-- <div class="chat-footer opacity-50">Delivered</div> -->
+            </div>
+            <!--  TODO add icon for when msg expires -->
+            <!-- <div class="chat-footer opacity-50">Delivered</div> -->
+          </div>
         </div>
       </div>
-    </div>
       <div v-else-if="msg.syncMessage">
         <div class="chat chat-end">
           <div class="chat-image avatar">
