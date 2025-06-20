@@ -204,13 +204,13 @@ if (import.meta.client) {
 <template>
   <div class="bg-[#313244] rounded h-screen w-1/5 p-5">
     <h1 class="font-bold text-2xl">Chats</h1>
-    <hr >
+    <hr />
     <div>
       <!-- make a list of chats -->
       <ul class="list bg-base-100 rounded-box shadow-md">
         <li v-for="chat in chats" class="list-row" @click="chat.handleClick()">
           <div v-if="chat._type == 'group'">
-            <div><img class="size-10 rounded-box" :src="chat.avatar" ></div>
+            <div><img class="size-10 rounded-box" :src="chat.avatar" /></div>
             <div>
               <div>{{ chat.name || chat.username }}</div>
               <div class="text-xs font-semibold opacity-60">
@@ -222,7 +222,7 @@ if (import.meta.client) {
             </div>
           </div>
           <div v-else>
-            <div><img class="size-10 rounded-box" :src="chat.avatar" ></div>
+            <div><img class="size-10 rounded-box" :src="chat.avatar" /></div>
             <div>
               <div>{{ chat.name || chat.username }}</div>
               <div class="text-xs font-semibold opacity-60">
