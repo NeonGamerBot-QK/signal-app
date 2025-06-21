@@ -2,12 +2,12 @@
 
 - write demo data + ui
 - [x] add image support for messsages
-- add support for sending messsages
+- [x] add support for sending messsages (barebones)
 - [ ] add support for deleting messages after they expire
 - add deleting message support lol
 - add edit message support
 - add sticker support
 - [ ] make it work
-- [ ] ship it
+- [x] ship it
 - ~~go viral~~ new things came up bucko
 - good docs

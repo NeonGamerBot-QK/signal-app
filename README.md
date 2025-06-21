@@ -1,5 +1,6 @@
 # Signal APP
-
+![screenshot](./screenshot.png)
+Signal desktop but... on the web??
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
 ## Setup
