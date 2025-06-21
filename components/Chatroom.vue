@@ -31,8 +31,8 @@ if (import.meta.client) {
           currentMsgs =
             JSON.parse(
               await messagesDb.getItem(
-                payload.envelope.syncMessage.sentMessage.destinationUuid
-              )
+                payload.envelope.syncMessage.sentMessage.destinationUuid,
+              ),
             ) || [];
         } catch (e) {
           currentMsgs = [];
@@ -41,7 +41,7 @@ if (import.meta.client) {
         console.log(payload.envelope.sourceUuid, newMsgs);
         await messagesDb.setItem(
           payload.envelope.syncMessage.sentMessage.destinationUuid || "1",
-          JSON.stringify(newMsgs)
+          JSON.stringify(newMsgs),
         );
         console.log("INSERT MY MESSAGE");
       }
@@ -58,7 +58,7 @@ if (import.meta.client) {
         console.log(payload.envelope.sourceUuid, newMsgs);
         await messagesDb.setItem(
           payload.envelope.sourceUuid || "1",
-          JSON.stringify(newMsgs)
+          JSON.stringify(newMsgs),
         );
         console.log("INSERT MESSAGE");
       }
@@ -82,7 +82,7 @@ if (import.meta.client) {
   if (!localStorage.getItem("myinfo")) {
     // takes first device because we cant be multi device atm :3\
     await makeArequest(
-      new JSONRPCHandler().setMethod("listAccounts").setPayload({})
+      new JSONRPCHandler().setMethod("listAccounts").setPayload({}),
     ).then((d) => {
       console.log(d);
       localStorage.setItem("myinfo", JSON.stringify(d.result[0]));
@@ -105,7 +105,7 @@ if (import.meta.client) {
           item._type = "user";
           nr.push(item);
         }
-      }
+      },
     );
     localStorage.setItem("groupchatlist", JSON.stringify(nr));
   }
@@ -116,7 +116,7 @@ if (import.meta.client) {
     const avatar = await makeArequest(
       new JSONRPCHandler()
         .setMethod("getAvatar")
-        .setPayload(item.id ? { groupId: item.id } : { profile: item.uuid })
+        .setPayload(item.id ? { groupId: item.id } : { profile: item.uuid }),
     ).then((d) => {
       console.log(d);
       return d.error
@@ -176,7 +176,7 @@ function sendMessage() {
     new JSONRPCHandler().setMethod("send").setPayload({
       message: ChatBoxValue.value,
       recipient: currentChatId.value,
-    })
+    }),
   ).then((d) => console.debug(`msg send response`, d));
   ChatBoxValue.value = "";
 }
