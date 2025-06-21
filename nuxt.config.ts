@@ -35,6 +35,7 @@ export default defineNuxtConfig({
     public: {
       sha: cmSha,
       date: cmDate,
+      demoMode: process.env.NUXT_PUBLIC_DEMO_MODE == 'true'
     },
   },
 

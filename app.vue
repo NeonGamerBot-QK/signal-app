@@ -8,7 +8,7 @@ useHead({
 });
 </script>
 <template>
-  <div class="min-h-screen bg-[#24273a] text-white p-8 overflow-hidden">
+  <div class="min-h-screen bg-[#24273a] text-white p-2 overflow-hidden">
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
