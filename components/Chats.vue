@@ -1,10 +1,8 @@
 <script setup type="ts">
 import { getAvatar } from '../util/chat';
-const props = defineProps(['messages', 'n', 'skeleton'])
+const props = defineProps(['messages', 'n', 'skeleton', 'chatId', 'isGroup'])
 const n = null;
 const cm  = []
-// console.log(n)
-// console.log('from chats.vue', messages)
 const foundAvatars = {};
 
 for(const m of props.messages ) {
@@ -56,7 +54,7 @@ const avatar = foundAvatars[item.sourceUuid] ? foundAvatars[item.sourceUuid] :  
                   class="bg-gray-200 dark:bg-gray-700 rounded-lg p-2"
                 >
                   <a
-                    :href="`/api/download?a=${attachment.id}`"
+                    :href="`/api/download?a=${attachment.id}${props.isGroup ? `&g=${props.chatId}` : '&r=' + props.chatId}`"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="text-blue-500 hover:underline"

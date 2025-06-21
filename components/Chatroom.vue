@@ -10,6 +10,9 @@ const chatMessages = useState("chatMessages", () => {
 // WHY DOES IT HAVE TO BE STRINGS
 const showChats0 = useState("showChats0", "n");
 const ShowChats1 = useState("ShowChats1", "n");
+const currentChatId = useState("currentChatId", "null");
+const isGroup = useState("isGroup", "n");
+const ChatBoxValue = ref("");
 if (import.meta.client) {
   const { KeyValueIndexedDB } = await import("../util/indexdb");
   const messagesDb = new KeyValueIndexedDB("signal", "messages", 1);
@@ -28,8 +31,8 @@ if (import.meta.client) {
           currentMsgs =
             JSON.parse(
               await messagesDb.getItem(
-                payload.envelope.syncMessage.sentMessage.destinationUuid,
-              ),
+                payload.envelope.syncMessage.sentMessage.destinationUuid
+              )
             ) || [];
         } catch (e) {
           currentMsgs = [];
@@ -38,7 +41,7 @@ if (import.meta.client) {
         console.log(payload.envelope.sourceUuid, newMsgs);
         await messagesDb.setItem(
           payload.envelope.syncMessage.sentMessage.destinationUuid || "1",
-          JSON.stringify(newMsgs),
+          JSON.stringify(newMsgs)
         );
         console.log("INSERT MY MESSAGE");
       }
@@ -55,7 +58,7 @@ if (import.meta.client) {
         console.log(payload.envelope.sourceUuid, newMsgs);
         await messagesDb.setItem(
           payload.envelope.sourceUuid || "1",
-          JSON.stringify(newMsgs),
+          JSON.stringify(newMsgs)
         );
         console.log("INSERT MESSAGE");
       }
@@ -79,7 +82,7 @@ if (import.meta.client) {
   if (!localStorage.getItem("myinfo")) {
     // takes first device because we cant be multi device atm :3\
     await makeArequest(
-      new JSONRPCHandler().setMethod("listAccounts").setPayload({}),
+      new JSONRPCHandler().setMethod("listAccounts").setPayload({})
     ).then((d) => {
       console.log(d);
       localStorage.setItem("myinfo", JSON.stringify(d.result[0]));
@@ -102,7 +105,7 @@ if (import.meta.client) {
           item._type = "user";
           nr.push(item);
         }
-      },
+      }
     );
     localStorage.setItem("groupchatlist", JSON.stringify(nr));
   }
@@ -113,7 +116,7 @@ if (import.meta.client) {
     const avatar = await makeArequest(
       new JSONRPCHandler()
         .setMethod("getAvatar")
-        .setPayload(item.id ? { groupId: item.id } : { profile: item.uuid }),
+        .setPayload(item.id ? { groupId: item.id } : { profile: item.uuid })
     ).then((d) => {
       console.log(d);
       return d.error
@@ -159,11 +162,23 @@ if (import.meta.client) {
       // }
       // chatMessages = dbmessages;
       // update the state value
+      currentChatId.value = item.id || item.uuid;
+
       chatMessages.value = dbmessages;
       showChats0.value = "y";
     };
     chats.push(item);
   }
+}
+function sendMessage() {
+  // console.log(ChatBoxValue.value);
+  makeArequest(
+    new JSONRPCHandler().setMethod("send").setPayload({
+      message: ChatBoxValue.value,
+      recipient: currentChatId.value,
+    })
+  ).then((d) => console.debug(`msg send response`, d));
+  ChatBoxValue.value = "";
 }
 </script>
 <template>
@@ -203,7 +218,21 @@ if (import.meta.client) {
     </div>
   </div>
   <div class="justify-between w-3/4 top-5 absolute right-10">
-    <Chats v-if="showChats0 == 'y'" :messages="chatMessages" :n="1" />
+    <div v-if="showChats0 == 'y'">
+      <Chats
+        :messages="chatMessages"
+        :isGroup="isGroup == 'y'"
+        :chatId="currentChatId"
+        :n="1"
+      />
+      <input
+        type="text"
+        class="input input-bordered w-3/4 mt-5"
+        placeholder="Send message :3."
+        v-model="ChatBoxValue"
+      />
+      <button class="btn p-2 ml-5" @click="sendMessage">Send</button>
+    </div>
     <div v-else>
       <h1 class="text-6xl text-center mt-50 animate-spin">:3</h1>
     </div>
