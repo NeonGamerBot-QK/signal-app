@@ -30,8 +30,10 @@ bun install
 ```
 
 ## Development Server
-
-Start the development server on `http://localhost:3000`:
+1. Install signal-cli if you havent
+2. link your account to signal-cli [How to do that here](https://github.com/AsamK/signal-cli?tab=readme-ov-file#usage)
+3. Run `bash dev-dev-server.sh`  (stats the signal-cli running on the backend)
+4. Start the development server on `http://localhost:3000`:
 
 ```bash
 # npm
@@ -46,7 +48,6 @@ yarn dev
 # bun
 bun run dev
 ```
-
 ## Production
 
 Build the application for production:
